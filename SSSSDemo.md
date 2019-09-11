@@ -6,15 +6,13 @@ Tuesday, September 10, 2019
 
 Meet and Greet
 
-Introduction by Max Davis-Johnson 
+Introduction by Max Davis-JohnsonÂ 
 
 Demo by Boise State University web developers Shaunna Kennedy and Matt Smith
 
-Questions and Discussion 
+Questions and DiscussionÂ 
 
 ### Simple Serverless Site in Seconds Walkthrough
-
-  
 
 This walkthrough will show how to manually set up and host a simple serverless website in AWS, as well as how to automate the configurations to be completed in seconds. The site will be very simple but the services used in this demo can be used to create sophisticated applications that scale.
 
@@ -23,159 +21,157 @@ This walkthrough will show how to manually set up and host a simple serverless w
 1. Log into the AWS console at [https://aws.amazon.com/console](https://aws.amazon.com/console) 
     1. Creating an account is free 
     2. Creating an account can take up to an hour 
-    3. Be aware of your region.  For this demo we are using us-west-2 (Oregon). 
+    3. Be aware of your region.Â  For this demo we are using us-west-2 (Oregon). 
 
-2. Download the demo files at: /* TDB */ 
+#### Lambda - Serverless Compute : Webapp â€œServer-sideâ€Â 
 
-#### Lambda - Serverless Compute : Webapp “Server-side” 
+The websiteâ€™s backend will be serverless function that will send an email through Amazon Web Servicesâ€™ Simple Email Service (SES).Â 
 
-The website’s backend will be serverless function that will send an email through Amazon Web Services’ Simple Email Service (SES). 
-
-1. On the AWS Console, search for and select “Lambda” 
+1. On the AWS Console, search for and select â€œLambdaâ€ 
 2. Click the Create Function button 
 
-    1. Choose the “Author from Scratch” option  
-    2. Enter the function name “SSSDemo” 
-    3. Select “Node.js 10.x” as the runtime 
-    4. Under permissions select “Create a new role with basic Lambda Permissions” 
-    5. Click “Create Function” 
+    1. Choose the â€œAuthor from Scratchâ€ optionÂ  
+    2. Enter the function name â€œSSSDemoâ€ 
+    3. Select â€œNode.js 10.xâ€ as the runtime 
+    4. Under permissions select â€œCreate a new role with basic Lambda Permissionsâ€ 
+    5. Click â€œCreate Functionâ€ 
 
-1. Scroll down to the “Function Code” Section 
-    1. In the “Code entry type” dropdown select “Edit code inline” 
+1. Scroll down to the â€œFunction Codeâ€ Section 
+    1. In the â€œCode entry typeâ€ dropdown select â€œEdit code inlineâ€ 
     2. Double click the index.js file on the left side of the editor 
-    3. From the starter files, copy the contents of “index.js” into the editor 
+    3. From the starter files, copy the contents of â€œindex.jsâ€ into the editor 
 
-2. Below the code in the “Environment variables” section add the following variables 
-    1. “EmailFromAddress” to whatever email you want 
-    2. “EmailToAddress” to whatever email you want 
-    3. “Region” to us-west-2 
+2. Below the code in the â€œEnvironment variablesâ€ section add the following variables 
+    1. â€œEmailFromAddressâ€ to whatever email you want 
+    2. â€œEmailToAddressâ€ to whatever email you want 
+    3. â€œRegionâ€ to us-west-2 
 
-3. Keep all other default settings, press “Save” 
+3. Keep all other default settings, press â€œSaveâ€ 
   
   
 
-1. To test the newly created Lambda function click “Test” in the top right 
-    1. Select the radio button “Create Test Event” 
-    2. Enter any name for the “Event Name” 
+1. To test the newly created Lambda function click â€œTestâ€ in the top right 
+    1. Select the radio button â€œCreate Test Eventâ€ 
+    2. Enter any name for the â€œEvent Nameâ€ 
     3. Enter the following JSON object as the test request message: { 
 
-    "suggestion":"This is a test suggestion"
+Â Â Â Â "suggestion":"This is a test suggestion"
 
 }
 
-    1. Click “Create”  
-    2. Click “Test” again in the top right with the event selected  
+    1. Click â€œCreateâ€Â  
+    2. Click â€œTestâ€ again in the top right with the event selectedÂ  
 
-1. At the top of the Lambda screen click “Details” under “Execution result” 
+1. At the top of the Lambda screen click â€œDetailsâ€ under â€œExecution resultâ€ 
     1. The test run will show that an error occurred 
-    2. The error message details that the Role does not have sufficient permission to SES and/or the emails are not verified.  This will be addressed in the next section. 
+    2. The error message details that the Role does not have sufficient permission to SES and/or the emails are not verified.Â  This will be addressed in the next section. 
 
 #### SES - Simple Email Service
 
-Newly created AWS accounts are in “Sandbox” mode which requires BOTH the sending email address and recipient email address to be verified.
+Newly created AWS accounts are in â€œSandboxâ€ mode which requires BOTH the sending email address and recipient email address to be verified.
 
-1. On the AWS Console, search for and select “Simple Email Service” 
-2. Click “Email Addresses” on the left of the screen 
-3. Click the “Verify a New Email Address” button in the top left 
-    1. Verify the email addresses that were provided in the Lambda’s environment variables 
+1. On the AWS Console, search for and select â€œSimple Email Serviceâ€ 
+2. Click â€œEmail Addressesâ€ on the left of the screen 
+3. Click the â€œVerify a New Email Addressâ€ button in the top left 
+    1. Verify the email addresses that were provided in the Lambdaâ€™s environment variables 
     2. An email will be sent to the emails being verified 
     3. Click the link in the email to verify the address 
 
-4. Make note of the “ARN” for your verified email address 
+4. Make note of the â€œARNâ€ for your verified email address 
 
 #### IAM - Identity and Access Management : Resource Permissions
 
-AWS Permissions are granular and should be configured with narrow scope. 
+AWS Permissions are granular and should be configured with narrow scope.Â 
 
-1. On the AWS Console, search for and select “IAM” 
-2. Click on “Roles” on the left of the screen 
-3. Edit the role beginning with “SSSDemo” (associated with your newly created Lambda) 
-4. Click “Add inline policy” 
-    1. Select the “JSON” tab 
+1. On the AWS Console, search for and select â€œIAMâ€ 
+2. Click on â€œRolesâ€ on the left of the screen 
+3. Edit the role beginning with â€œSSSDemoâ€ (associated with your newly created Lambda) 
+4. Click â€œAdd inline policyâ€ 
+    1. Select the â€œJSONâ€ tab 
     2. Copy/Paste the contents of the SES-RestrictFeaturesAndSender.txt file from the demo files 
-    3. Update the “Resource” to be the ARN of your verified email address. 
-    4. Click “Review Policy” 
+    3. Update the â€œResourceâ€ to be the ARN of your verified email address. 
+    4. Click â€œReview Policyâ€ 
     5. Provide a name 
-    6. Click “Create Policy” 
+    6. Click â€œCreate Policyâ€ 
 
 5. After the policy update in the previous section and the email address verification, testing your Lambda function should work. 
 
 #### API Gateway : Make Public/Secured APIs
 
-1. On the AWS Console, search for and select “API Gateway” 
-2. Click “Create API” in the top left or “Get Started” 
-    1. Change the “Create new API” radio button to “New API” 
-    2. Use “SSSDemo” for the API Name 
-    3. Click “Create” 
+1. On the AWS Console, search for and select â€œAPI Gatewayâ€ 
+2. Click â€œCreate APIâ€ in the top left or â€œGet Startedâ€ 
+    1. Change the â€œCreate new APIâ€ radio button to â€œNew APIâ€ 
+    2. Use â€œSSSDemoâ€ for the API Name 
+    3. Click â€œCreateâ€ 
 
-3. Click the “Actions” dropdown and click “Create Resource” 
-    1. Enter “email” for the Resource Name 
-    2. Check the “Enable API Gateway CORS” checkbox 
-    3. Click “Create Resource” 
+3. Click the â€œActionsâ€ dropdown and click â€œCreate Resourceâ€ 
+    1. Enter â€œemailâ€ for the Resource Name 
+    2. Check the â€œEnable API Gateway CORSâ€ checkbox 
+    3. Click â€œCreate Resourceâ€ 
 
-4. Click the “Actions” dropdown and click “Create Method” 
-    1. Select POST in the dropdown beneath “/email” and click the checkmark 
-    2. Select “Lambda Function” for the integration type  
-    3. In the “Lambda Function” field start typing “SSS” and it should autocomplete “SSSDemo” the Lambda function that was created earlier 
-    4. Click “Save” and a warning will appear saying that new permissions will be granted to the “SSSDemo” which will give API Gateway permission to the Lambda 
-    5. Click “OK” 
+4. Click the â€œActionsâ€ dropdown and click â€œCreate Methodâ€ 
+    1. Select POST in the dropdown beneath â€œ/emailâ€ and click the checkmark 
+    2. Select â€œLambda Functionâ€ for the integration typeÂ  
+    3. In the â€œLambda Functionâ€ field start typing â€œSSSâ€ and it should autocomplete â€œSSSDemoâ€ the Lambda function that was created earlier 
+    4. Click â€œSaveâ€ and a warning will appear saying that new permissions will be granted to the â€œSSSDemoâ€ which will give API Gateway permission to the Lambda 
+    5. Click â€œOKâ€ 
 
 5. Enable CORS 
-    1. In the “Actions” dropdown click “Enable CORS” 
-    2. Click the “Enable CORS and replace…” button 
-    3. Click “Yes, replace existing values” 
+    1. In the â€œActionsâ€ dropdown click â€œEnable CORSâ€ 
+    2. Click the â€œEnable CORS and replaceâ€¦â€ button 
+    3. Click â€œYes, replace existing valuesâ€ 
 
-6. In the “Actions” dropdown click “Deploy API” 
-    1. Select “New stage” in the dropdown 
-    2. Enter “dev” 
-    3. Click “Deploy” 
+6. In the â€œActionsâ€ dropdown click â€œDeploy APIâ€ 
+    1. Select â€œNew stageâ€ in the dropdown 
+    2. Enter â€œdevâ€ 
+    3. Click â€œDeployâ€ 
 
-7. Deploying the API should display the “Stages” screen 
-    1. Make note of the “Invoke URL” 
+7. Deploying the API should display the â€œStagesâ€ screen 
+    1. Make note of the â€œInvoke URLâ€ 
     2. This URL is where the suggestions will be POSTed to by the client HTML 
 
-#### S3 - Simple Storage Service : Webapp “Client Side”
+#### S3 - Simple Storage Service : Webapp â€œClient Sideâ€
 
 S3 buckets can be used to store nearly anything. We will be storing our pre-built Angular application for the client side in an S3 bucket.
 
-1. On the AWS Console, search for and select “S3” 
-2. Click “Create Bucket” 
+1. On the AWS Console, search for and select â€œS3â€ 
+2. Click â€œCreate Bucketâ€ 
     1. Bucket names have to be unique across AWS 
-    2. Provide the name “sss-demo-” followed by something to make it unique then Click “Next” 
-    3. Keep the defaults and click “Next” again 
-    4. On the “Set Permissions” tab, uncheck “Block all public access”, click “Next” 
-    5. Click “Create bucket” 
+    2. Provide the name â€œsss-demo-â€ followed by something to make it unique then Click â€œNextâ€ 
+    3. Keep the defaults and click â€œNextâ€ again 
+    4. On the â€œSet Permissionsâ€ tab, uncheck â€œBlock all public accessâ€, click â€œNextâ€ 
+    5. Click â€œCreate bucketâ€ 
 
 3. Click on the newly created bucket 
-    1. Click “Properties” 
-    2. Then click “Static website hosting” 
-    3. Select “Use this bucket to host a website” 
-    4. Enter “index.html” in to the “Index Document” field 
-    5. Make note of the “Endpoint” url 
-    6. Click “Save” 
+    1. Click â€œPropertiesâ€ 
+    2. Then click â€œStatic website hostingâ€ 
+    3. Select â€œUse this bucket to host a websiteâ€ 
+    4. Enter â€œindex.htmlâ€ in to the â€œIndex Documentâ€ field 
+    5. Make note of the â€œEndpointâ€ url 
+    6. Click â€œSaveâ€ 
 
-4. Click on “Bucket Policy” under the “Permissions tab 
+4. Click on â€œBucket Policyâ€ under the â€œPermissions tab 
     1. Copy the provided bucket policy from S3-PolicyForWebHosting.txt in the demo files. 
-    2. Edit the bucket policy and replace “example-bucket” with the name of your bucket 
-    3. Click “Save” 
+    2. Edit the bucket policy and replace â€œexample-bucketâ€ with the name of your bucket 
+    3. Click â€œSaveâ€ 
 
-5. Click the “Overview” tab for the bucket to upload the client HTML files 
+5. Click the â€œOverviewâ€ tab for the bucket to upload the client HTML files 
     1. Click Upload 
-    2. From the demo files, upload the contents of the “client-side-distributable” folder 
+    2. From the demo files, upload the contents of the â€œclient-side-distributableâ€ folder 
 
 #### Finished!
 
-1. Open the Static Website Hosting “Endpoint” url in a new window 
+1. Open the Static Website Hosting â€œEndpointâ€ url in a new window 
 2. Enter a suggestion 
-3. Enter the API Gateway URL into the corresponding field.  Remember to add the resource path “/email” 
+3. Enter the API Gateway URL into the corresponding field.Â  Remember to add the resource path â€œ/emailâ€ 
 4. Submit and check the emails used in the SSSDemo Lambda 
 
 #### EXTRA! Route53, CloudWatch, CloudFront, CloudFormation
 
-- CloudFront is required… 
+- CloudFront is requiredâ€¦ 
     - In order to utilize SSL/https 
     - For full caching options 
-    - For Angular and other SPAs, when utilizing routing, CloudFront  
+    - For Angular and other SPAs, when utilizing routing, CloudFrontÂ  
 
   
 
@@ -185,21 +181,21 @@ S3 buckets can be used to store nearly anything. We will be storing our pre-buil
 
 #### CloudFormation
 
-1. Search and select “CloudFormation” on the AWS console 
+1. Search and select â€œCloudFormationâ€ on the AWS console 
     1. Create a stack 
-    2. Name the stack “SSSSCFDemo” 
+    2. Name the stack â€œSSSSCFDemoâ€ 
     3. Provide the variables 
-        1. APIGatewayNameParam - “SSSS-CFDemo-API” 
+        1. APIGatewayNameParam - â€œSSSS-CFDemo-APIâ€ 
         2. EmailFromAddress 
         3. EmailToAddress 
-        4. LambdaFunctionName - “SSSS-CFDemo-SendEmailFunction” 
-        5. LambdaRoleName - “SSSS-CFDemo-SESLambdaRole” 
-        6. BucketNameParam - “ssss-cf-demo-site-bucket-123” (edit to be more unique) 
+        4. LambdaFunctionName - â€œSSSS-CFDemo-SendEmailFunctionâ€ 
+        5. LambdaRoleName - â€œSSSS-CFDemo-SESLambdaRoleâ€ 
+        6. BucketNameParam - â€œssss-cf-demo-site-bucket-123â€ (edit to be more unique) 
 
-    4. Click “Next” until the confirmation page 
-    5. Check the “I acknowledge”  
-    6. Click “Create Stack” 
-    7. On the new page under the “Events” tab 
+    4. Click â€œNextâ€ until the confirmation page 
+    5. Check the â€œI acknowledgeâ€Â  
+    6. Click â€œCreate Stackâ€ 
+    7. On the new page under the â€œEventsâ€ tab 
         1. View the progress of the creation of all the resources 
         2. See logs for errors 
 
@@ -207,7 +203,7 @@ S3 buckets can be used to store nearly anything. We will be storing our pre-buil
     9. The created bucket is empty 
 
 2. Navigate to API Gateway and note the Invoke URL for the new API Gateway created by Cloudformation 
-3. Navigate to S3  
+3. Navigate to S3Â  
     1. Upload the site files to the newly created bucket 
     2. Go to Properties -&gt; Static Website Hosting and note url 
 
