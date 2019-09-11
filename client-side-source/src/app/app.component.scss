@@ -1,0 +1,12 @@
+.centered-toolbar {
+    display: flex;
+    justify-content: space-around;
+    height: unset;
+}
+
+@media (min-width: 1000px) {
+    .centered-toolbar > .mat-h1 {
+    font-size: 64px;
+    line-height: 128px;
+    }
+}

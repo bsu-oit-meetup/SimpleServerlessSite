@@ -1,0 +1,13 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Resource": "arn:aws:ses:us-west-2:YOURACCOUNTNUMBER:identity/youremail@youremail.com",
+            "Effect": "Allow",
+            "Action": [
+                "ses:SendEmail",
+                "ses:SendRawEmail"
+            ]            
+        }
+    ]
+}

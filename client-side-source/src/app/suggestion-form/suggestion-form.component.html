@@ -1,0 +1,17 @@
+<mat-card color="accent" class="suggestion-form-card">
+    <mat-card-title><h2 class="mat-subheading-2">Use the API Gateway URL to submit your suggestion or provide feedback</h2></mat-card-title>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+        <mat-form-field class="suggestion-form-input">
+            <input matInput [(ngModel)]="suggestion" placeholder="Suggestion or Feedback">
+        </mat-form-field>
+        <mat-form-field class="suggestion-form-input">
+                <input matInput [(ngModel)]="suggestionEndpoint" placeholder="API Gateway URL">
+            </mat-form-field>
+        <button class="suggestion-submit-button" (click)="submitSuggestion()" mat-raised-button color="primary">Submit</button>
+    </mat-card-content>
+    <mat-card-content *ngIf="result" >
+        <h6 class="mat-6">API Gateway Response: </h6>
+        {{ result | json }}
+    </mat-card-content>
+</mat-card>

@@ -1,0 +1,256 @@
+{
+	"AWSTemplateFormatVersion" : "2010-09-09",
+
+	"Description" : "",
+
+	"Parameters" : {
+		"LambdaIAMRoleNameParam": {
+			"Default": "SSSS-CFDemo-SESLambdaRole",
+			"Description": "Role for the Lambda to run under",
+			"Type": "String"
+			},
+		"LambdaFunctionNameParam": {
+			"Default": "SSSS-CFDemo-SendEmailFunction",
+			"Description" : "Function name for the lambda that will send email",
+			"Type": "String"
+			},
+		"EmailFromAddressParam" : {
+			"Default": "",
+			"Description" : "From email address used when sending email... will need to be already added and verified in SES",
+			"Type": "String"
+		},
+		"EmailToAddressParam" : {
+			"Default": "",
+			"Description" : "Recipient email address ... will need to be already added and verified in SES... requirement when AWS Account is in Sandbox status",
+			"Type": "String"
+		},
+		"APIGatewayNameParam" : {
+			"Default": "SSSS-CFDemo-API",
+			"Description" : "Name for the API Gateway",
+			"Type" : "String"
+		},
+		"BucketNameParam" : {
+			"Default": "ssss-cf-demo-site-bucket-123",
+			"Description": "Name for the s3 bucket that will host your client side files.",
+			"Type": "String"
+		}
+	},
+	"Resources" : { 
+		"SESLambdaRole": {
+   			"Type" : "AWS::IAM::Role",
+   			"Properties" : {
+                "RoleName": { "Ref": "LambdaIAMRoleNameParam" },
+   				"AssumeRolePolicyDocument" : {
+					"Version" : "2012-10-17",
+						"Statement" : [
+						{
+							"Effect" : "Allow",
+							"Principal" : {
+								"Service" : [
+									"lambda.amazonaws.com"
+								]
+							},
+							"Action"    : [
+								"sts:AssumeRole"
+							]
+						}
+					]
+   				},
+				"ManagedPolicyArns" : [
+					"arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+				]
+   			}
+		},
+        "SESSendPolicy" : {
+			"DependsOn" :"SESLambdaRole",
+			"Type" : "AWS::IAM::Policy",
+			"Properties" : {
+              "PolicyName" : {"Fn::Join" : ["", [{ "Ref": "LambdaIAMRoleNameParam" }, "Policy"]]},
+              "PolicyDocument" : {
+				"Version" : "2012-10-17",
+						"Statement" : [
+						{
+							"Effect": "Allow",
+							"Action": [
+								"ses:SendEmail",
+								"ses:SendRawEmail"
+							],
+							"Resource": {"Fn::Join": ["", [ "arn:aws:ses:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":identity/", { "Ref": "EmailFromAddressParam" }] ] }
+						}
+					]
+				},
+				"Roles" : [ { "Ref": "LambdaIAMRoleNameParam" } ]
+			}
+		},
+		"SendEmailLambda": {
+		  "Type" : "AWS::Lambda::Function",
+		  "DependsOn" :"SESLambdaRole",
+		  "Properties" : {
+			  "Code" : {
+				"ZipFile": "var aws = require('aws-sdk');\nvar ses = new aws.SES({ region: process.env.AccountRegion });\n\nexports.handler = function(event, context) {\n    console.log('Incoming event info: ', event);\n    var eParams = {\n        Destination: { ToAddresses: [process.env.EmailToAddress]},\n        Message: {\n            Body: { Text: { Data: event.suggestion }},\n            Subject: {Data: 'AWS User Group - Topic Suggestion'}\n        },\n        Source: process.env.EmailFromAddress\n    };\n    var email = ses.sendEmail(eParams, function(err, data) {\n            if(err) {\n                console.log(err);\n                throw err;\n            }\n            else {\n                console.log('Email Sent', data);\n                context.succeed(event);\n            }\n        }\n    );\n};"
+			  },
+			  "Description" : "Demo of microservice to send email",
+			  "Environment" : {"Variables" : { "EmailFromAddress" : { "Ref" : "EmailFromAddressParam" }, "EmailToAddress" : { "Ref" : "EmailToAddressParam"}, "AccountRegion" : { "Ref" : "AWS::Region" } } },
+			  "FunctionName" : { "Ref" : "LambdaFunctionNameParam" },
+			  "Handler" : "index.handler",
+			  "Role" : { "Fn::GetAtt" : [ "SESLambdaRole", "Arn" ] },
+			  "Runtime" : "nodejs8.10"
+			}
+		},
+		"ApiGatewaySimpleSite" : {
+			"Type" : "AWS::ApiGateway::RestApi",
+			"Description" : "Creates an API Gateway our demo",
+			"Properties" : { 
+    			"Name" : { "Ref": "APIGatewayNameParam" }
+			}
+		},
+		"SimpleSiteApiResource" : {
+			"Type" : "AWS::ApiGateway::Resource",
+			"Description" : "Creates the a resource endpoint for the API Gateway",
+			"DependsOn" :"ApiGatewaySimpleSite",
+			"Properties" : { 
+				"RestApiId": {"Ref" : "ApiGatewaySimpleSite"},
+				"ParentId": {"Fn::GetAtt": ["ApiGatewaySimpleSite", "RootResourceId"]},
+				"PathPart": "email"
+			}
+		},
+		"SimpleSiteApiEmailPOSTMethod" : {
+		     "Type" : "AWS::ApiGateway::Method",
+		     "Properties" : {
+		         "HttpMethod" : "POST",
+		         "ResourceId" : { "Ref": "SimpleSiteApiResource" },
+		         "RestApiId"  : { "Ref": "ApiGatewaySimpleSite" },
+				 "AuthorizationType" : "NONE",
+				 "Integration" : {
+					 "Type" : "AWS",
+					 "IntegrationHttpMethod" : "POST",
+					 "Uri" :  {"Fn::Join" : [ "", [ 
+						 "arn:aws:apigateway:",
+						 { "Ref" : "AWS::Region"},
+						 ":lambda:path/2015-03-31/functions/",
+						  {"Fn::GetAtt" : ["SendEmailLambda", "Arn"]},
+						  "/invocations" ] 
+						 ]},
+					 "IntegrationResponses": [
+						{
+							"StatusCode": "200",
+							"ResponseParameters": {
+								"method.response.header.Access-Control-Allow-Origin": "'*'"
+							}
+						}
+					 ],
+					 "PassthroughBehavior": "WHEN_NO_MATCH"
+				 },
+				 "MethodResponses" : [
+					{
+						"StatusCode": "200",
+						"ResponseModels": {
+							"application/json": "Empty"
+						},
+						"ResponseParameters": {
+							"method.response.header.Access-Control-Allow-Origin": false
+						}
+					}
+				]
+		    },
+			"DependsOn" : [ "ApiGatewaySimpleSite",  "SimpleSiteApiResource" ]
+		},
+		"SimpleSiteApiEmailOPTIONSMethod": {
+			"Type": "AWS::ApiGateway::Method",
+			"Properties": {
+				"AuthorizationType": "NONE",
+				"RestApiId": {
+				"Ref": "ApiGatewaySimpleSite"
+				},
+				"ResourceId": {
+				"Ref": "SimpleSiteApiResource"
+				},
+				"HttpMethod": "OPTIONS",
+				"Integration": {
+					"IntegrationResponses": [
+					{
+						"StatusCode": 200,
+						"ResponseParameters": {
+							"method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+							"method.response.header.Access-Control-Allow-Methods": "'POST,OPTIONS'",
+							"method.response.header.Access-Control-Allow-Origin": "'*'"
+						},
+						"ResponseTemplates": {
+							"application/json": ""
+						}
+					}],
+					"PassthroughBehavior": "WHEN_NO_MATCH",
+					"RequestTemplates": {
+						"application/json": "{\"statusCode\": 200}"
+					},
+					"Type": "MOCK"
+				},
+				"MethodResponses": [
+				{
+					"StatusCode": 200,
+					"ResponseModels": {
+					"application/json": "Empty"
+					},
+					"ResponseParameters": {
+					"method.response.header.Access-Control-Allow-Headers": false,
+					"method.response.header.Access-Control-Allow-Methods": false,
+					"method.response.header.Access-Control-Allow-Origin": false
+					}
+				}]
+			}
+		},
+		"InvokePermissionSimpleSiteEmailLambdaCustomAuthorizer": {
+			"Type": "AWS::Lambda::Permission",
+			"DependsOn" :"SendEmailLambda",
+			"Properties": {
+				"FunctionName" : { "Ref" : "LambdaFunctionNameParam" },
+				"Action": "lambda:InvokeFunction",
+				"Principal": "apigateway.amazonaws.com",
+				"SourceArn": {"Fn::Join" : ["", ["arn:aws:execute-api:", { "Ref" : "AWS::Region"}, ":", { "Ref" : "AWS::AccountId"}, ":", { "Ref" : "ApiGatewaySimpleSite" }, "/*"]]}
+			}
+		},
+		"SimpleSiteApiDeployment": {
+			"Type": "AWS::ApiGateway::Deployment",
+			"Properties": {
+			"RestApiId": { "Ref": "ApiGatewaySimpleSite" },
+			"StageName": "Dev"
+			},
+			"DependsOn" : ["ApiGatewaySimpleSite", "SimpleSiteApiEmailPOSTMethod", "SimpleSiteApiEmailOPTIONSMethod", "InvokePermissionSimpleSiteEmailLambdaCustomAuthorizer"]
+		},
+		"SimpleSiteS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+				"BucketName" : { "Ref" : "BucketNameParam" },
+                "AccessControl": "PublicRead",
+                "WebsiteConfiguration": {
+                    "IndexDocument": "index.html",
+                    "ErrorDocument": "error.html"
+                }
+            }
+        },
+        "BucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Id": "MyPolicy",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "PublicReadForGetBucketObjects",
+                            "Effect": "Allow",
+                            "Principal": "*",
+                            "Action": "s3:GetObject",
+                            "Resource": { "Fn::Join": ["", ["arn:aws:s3:::", { "Ref": "SimpleSiteS3Bucket" }, "/*" ] ] }
+                        }
+                    ]
+                },
+                "Bucket": {
+                    "Ref": "SimpleSiteS3Bucket"
+                }
+            }
+        }
+	},
+
+	"Outputs" : {
+	}
+}

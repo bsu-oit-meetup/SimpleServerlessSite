@@ -1,0 +1,87 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/theming';
+// Plus imports for other components in your app.
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat-core();
+
+$custom-primary: (
+    50 : #e0e7f4,
+    100 : #b3c2e3,
+    200 : #8099d0,
+    300 : #4d70bd,
+    400 : #2652ae,
+    500 : #0033a0,
+    600 : #002e98,
+    700 : #00278e,
+    800 : #002084,
+    900 : #001473,
+    A100 : #a1abff,
+    A200 : #6e7dff,
+    A400 : #3b4fff,
+    A700 : #2238ff,
+    contrast: (
+        50 : #000000,
+        100 : #000000,
+        200 : #000000,
+        300 : #ffffff,
+        400 : #ffffff,
+        500 : #ffffff,
+        600 : #ffffff,
+        700 : #ffffff,
+        800 : #ffffff,
+        900 : #ffffff,
+        A100 : #000000,
+        A200 : #000000,
+        A400 : #ffffff,
+        A700 : #ffffff,
+    )
+);
+
+$custom-accent: (
+    50 : #fae8e1,
+    100 : #f3c7b5,
+    200 : #eba184,
+    300 : #e27b53,
+    400 : #dc5f2e,
+    500 : #d64309,
+    600 : #d13d08,
+    700 : #cc3406,
+    800 : #c62c05,
+    900 : #bc1e02,
+    A100 : #ffe7e5,
+    A200 : #ffb9b2,
+    A400 : #ff8b7f,
+    A700 : #ff7465,
+    contrast: (
+        50 : #000000,
+        100 : #000000,
+        200 : #000000,
+        300 : #000000,
+        400 : #ffffff,
+        500 : #ffffff,
+        600 : #ffffff,
+        700 : #ffffff,
+        800 : #ffffff,
+        900 : #ffffff,
+        A100 : #000000,
+        A200 : #000000,
+        A400 : #000000,
+        A700 : #000000,
+    )
+);
+
+$anms-primary: mat-palette($custom-primary);
+$anms-accent: mat-palette($custom-accent);
+$anms-warn: mat-palette($mat-red);
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@include angular-material-theme(mat-light-theme($anms-primary, $anms-accent, $anms-warn));
+
+body {
+    margin: 0;
+}
